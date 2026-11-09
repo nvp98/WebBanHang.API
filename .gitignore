@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+WebBanHang.Api/wwwroot/uploads/*
+!WebBanHang.Api/wwwroot/uploads/.gitkeep
+appsettings.*.local.json
+WebBanHang.Api/wwwroot/Photos/

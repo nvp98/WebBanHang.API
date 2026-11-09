@@ -1,0 +1,1070 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>WebBanHang.Api</name>
+    </assembly>
+    <members>
+        <member name="T:WebBanHang.Api.Common.ApiResponse`1">
+            <summary>Envelope expected by the frontend: <c>{ success, data, message }</c>.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.ApiResponse`1.#ctor(System.Boolean,`0,System.String)">
+            <summary>Envelope expected by the frontend: <c>{ success, data, message }</c>.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Common.ApiError">
+            <summary>Error shape expected by the frontend: <c>{ success: false, message, errors, statusCode }</c>.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.ApiError.#ctor(System.String,System.Int32,System.Collections.Generic.IDictionary{System.String,System.String[]})">
+            <summary>Error shape expected by the frontend: <c>{ success: false, message, errors, statusCode }</c>.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Common.ApiException">
+            <summary>Thrown by services; rendered as an <see cref="T:WebBanHang.Api.Common.ApiError"/> with the given status code.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.ApiException.#ctor(System.Int32,System.String)">
+            <summary>Thrown by services; rendered as an <see cref="T:WebBanHang.Api.Common.ApiError"/> with the given status code.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.HtmlText.ToPlainText(System.String,System.Int32)">
+            <summary>Strips tags/entities from legacy HTML so it can be shown as a plain-text summary.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.HtmlText.Tags">
+            <remarks>
+            Pattern:<br/>
+            <code>&lt;[^&gt;]+&gt;</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match '&lt;'.<br/>
+            ○ Match a character other than '&gt;' atomically at least once.<br/>
+            ○ Match '&gt;'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:WebBanHang.Api.Common.HtmlText.Spaces">
+            <remarks>
+            Pattern:<br/>
+            <code>\\s+</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a whitespace character atomically at least once.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:WebBanHang.Api.Common.Lang">
+            <summary>Values of the legacy LanguageID column.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Lang.Parse(System.String)">
+            <summary>"vi" | "en" | "0" | "1" → LanguageID; null when not recognised.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Lang.FromRequest(Microsoft.AspNetCore.Http.HttpRequest)">
+            <summary>?lang=… first, then Accept-Language, defaulting to Vietnamese.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Common.OrderStatuses">
+            <summary>Maps the legacy Orders.is_status integer to the frontend OrderStatus strings.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.OrderStatuses.Code(System.Int32)">
+            <summary>Quote code shown to customers, e.g. BG006392.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Common.Passwords">
+            <summary>
+            The legacy site stores unsalted MD5 (32 hex chars). New hashes use PBKDF2-SHA256:
+            "pbkdf2$&lt;iterations&gt;$&lt;salt b64&gt;$&lt;hash b64&gt;" (~80 chars — needs Database/upgrade.sql to widen the column).
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Passwords.IsLegacy(System.String)">
+            <summary>True when the stored hash is the weak legacy format and should be upgraded.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.QueryExtensions.Active``1(System.Linq.IQueryable{``0})">
+            <summary>Rows that are not soft-deleted (legacy data stores NULL or 0 for active rows).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Common.Slug">
+            <summary>
+            Converts between frontend slugs ("may-do-do-cung-vai") and the legacy TitleURL column
+            ("/may-do-do-cung-vai.html" for vi, "/en/fabric-stiffness-tester.html" for en).
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Slug.FromTitleUrl(System.String)">
+            <summary>"/en/abc-def.html" → "abc-def". Returns null when the column is empty.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Slug.Candidates(System.String)">
+            <summary>Both legacy URL forms a slug could be stored as.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Slug.For(System.String,System.String,System.Int32)">
+            <summary>
+            Public slug for a row. Rows without TitleURL get "{generated}-{id}" so they stay addressable;
+            <see cref="M:WebBanHang.Api.Common.Slug.TrailingId(System.String)"/> recovers the id when such a slug is requested.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Slug.NonAlphanumeric">
+            <remarks>
+            Pattern:<br/>
+            <code>[^a-z0-9]+</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [^0-9a-z] atomically at least once.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:WebBanHang.Api.Common.Slug.TrailingNumber">
+            <remarks>
+            Pattern:<br/>
+            <code>(?:^|-)(\\d+)$</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match with 2 alternative expressions.<br/>
+                ○ Match if at the beginning of the string.<br/>
+                ○ Match '-'.<br/>
+            ○ 1st capture group.<br/>
+                ○ Match a Unicode digit atomically at least once.<br/>
+            ○ Match if at the end of the string or if before an ending newline.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.AdminAuthController">
+            <summary>Back-office sign-in against dbo.Logons. Refresh uses the shared /api/auth/refresh-token.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.AdminAuthController.#ctor(WebBanHang.Api.Services.AuthService,WebBanHang.Api.Services.ICurrentUser)">
+            <summary>Back-office sign-in against dbo.Logons. Refresh uses the shared /api/auth/refresh-token.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.ProductsAdminController.SetStandards(System.Int32,WebBanHang.Api.Models.ProductStandardsInput,System.Threading.CancellationToken)">
+            <summary>Replaces the product's standards (stored for both languages, as the legacy admin did).</summary>
+        </member>
+        <member name="F:WebBanHang.Api.Controllers.Admin.Policies.Staff">
+            <summary>Any back-office user (Admin or Nhân viên group).</summary>
+        </member>
+        <member name="F:WebBanHang.Api.Controllers.Admin.Policies.Admin">
+            <summary>Members of the Admin group only.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.CmsCrudController`2">
+            <summary>
+            CRUD for a multilingual CMS table. Rows are addressed by <c>pk</c> (one row per language);
+            <c>id</c> groups the translations of the same item.
+            <list type="bullet">
+            <item>POST <c>?lang=en&amp;translationOf={id}</c> adds the English version of an existing item.</item>
+            <item>DELETE is a soft delete (IsDeleted = 1) of every language version; <c>/restore</c> undoes it.</item>
+            </list>
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.#ctor(WebBanHang.Api.Data.AppDbContext)">
+            <summary>
+            CRUD for a multilingual CMS table. Rows are addressed by <c>pk</c> (one row per language);
+            <c>id</c> groups the translations of the same item.
+            <list type="bullet">
+            <item>POST <c>?lang=en&amp;translationOf={id}</c> adds the English version of an existing item.</item>
+            <item>DELETE is a soft delete (IsDeleted = 1) of every language version; <c>/restore</c> undoes it.</item>
+            </list>
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Apply(`1,`0)">
+            <summary>Copies the request body onto the entity.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Search(System.Linq.IQueryable{`0},System.String)">
+            <summary>Free-text search; use <see cref="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Like(System.String)"/> so ntext columns work.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.ValidateAsync(`1,`0,System.Threading.CancellationToken)">
+            <summary>Business validation before saving (foreign keys, uniqueness…). Throw <see cref="T:WebBanHang.Api.Common.ApiException"/>.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.EnsureCanDeleteAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Blocks deleting items that are still referenced. Throw <see cref="T:WebBanHang.Api.Common.ApiException"/>.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Like(System.String)">
+            <summary>"%term%" with LIKE wildcards escaped (escape char '\').</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Translations(System.Int32,System.Threading.CancellationToken)">
+            <summary>All language versions of the item that row <paramref name="pk"/> belongs to.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Create(`1,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <param name="lang">vi (default) | en</param>
+            <param name="translationOf">Logical id of the item this row translates.</param>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.Delete(System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <param name="allLanguages">Also delete the other language versions (default true).</param>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.DeletePermanently(System.Int32,System.Threading.CancellationToken)">
+            <summary>Permanently removes a row that is already soft-deleted. Admin only.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CmsCrudController`2.ApplySeoAsync(`1,`0,System.Threading.CancellationToken)">
+            <summary>Keeps TitleURL in the legacy "/slug.html" | "/en/slug.html" format and unique within the table.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.ContactsAdminController">
+            <summary>Messages from the contact form (dbo.Contacts).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.ContactsAdminController.#ctor(WebBanHang.Api.Data.AppDbContext)">
+            <summary>Messages from the contact form (dbo.Contacts).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.ContactsAdminController.List(System.String,System.Nullable{System.Boolean},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <param name="processed">true = processed only, false = new only, omitted = all.</param>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.ContactsAdminController.BulkDelete(WebBanHang.Api.Models.BulkIdsInput,System.Threading.CancellationToken)">
+            <summary>Moves many messages to the trash at once (spam clean-up).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.ConfigsAdminController">
+            <summary>Site settings. Admin only — the table also stores SMTP credentials.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.ConfigsAdminController.#ctor(WebBanHang.Api.Data.AppDbContext)">
+            <summary>Site settings. Admin only — the table also stores SMTP credentials.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.CustomersAdminController">
+            <summary>Storefront customer accounts (dbo.Account). Passwords are never returned.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.CustomersAdminController.#ctor(WebBanHang.Api.Data.AppDbContext)">
+            <summary>Storefront customer accounts (dbo.Account). Passwords are never returned.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.QuotesAdminController">
+            <summary>Quote requests (dbo.Orders + dbo.ordersdetailed). Addressed by the logical id shown as BG000123.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.QuotesAdminController.#ctor(WebBanHang.Api.Data.AppDbContext,WebBanHang.Api.Services.OrderService)">
+            <summary>Quote requests (dbo.Orders + dbo.ordersdetailed). Addressed by the logical id shown as BG000123.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.QuotesAdminController.List(System.String,System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <param name="q">Name, e-mail, phone or code (BG000123).</param>
+            <param name="status">pending | confirmed | processing | shipping | delivered | cancelled</param>
+            <param name="deleted">Show the trash instead of active rows.</param>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.QuotesAdminController.ReplaceItems(System.Int32,WebBanHang.Api.Models.QuoteItemsInput,System.Threading.CancellationToken)">
+            <summary>Replaces the quoted lines — used to enter quantities and unit prices for the customer.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.QuotesAdminController.BulkDelete(WebBanHang.Api.Models.BulkIdsInput,System.Threading.CancellationToken)">
+            <summary>Moves many quote requests to the trash at once (spam clean-up).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.UploadsController.Upload(System.String,Microsoft.AspNetCore.Http.IFormFile,System.Threading.CancellationToken)">
+            <summary>
+            Uploads an image/document. Store the returned <c>path</c> in the entity field (Images, BigImages, FileCatalogue…).
+            </summary>
+            <param name="kind">product | product-category | manufacturer | news | banner | partner | service | project | document</param>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.UploadsController.Config">
+            <summary>
+            Lets the admin UI preview stored values: bare file names resolve to {legacyBaseUrl}/{folders[kind]}/{file}.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.UploadsController.Resolve(System.String,System.String)">
+            <summary>Resolves a stored value (file name or path) to its public URL.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.Admin.UsersAdminController">
+            <summary>Back-office accounts: dbo.Logons + Members (profile) + Assigns (group). Admin only.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.Admin.UsersAdminController.#ctor(WebBanHang.Api.Data.AppDbContext,WebBanHang.Api.Services.AuthService,WebBanHang.Api.Services.ICurrentUser)">
+            <summary>Back-office accounts: dbo.Logons + Members (profile) + Assigns (group). Admin only.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.AuthController">
+            <summary>Customer authentication — matches frontend/lib/api/auth.ts and the refresh flow in client.ts.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.AuthController.#ctor(WebBanHang.Api.Services.AuthService,WebBanHang.Api.Services.ICurrentUser)">
+            <summary>Customer authentication — matches frontend/lib/api/auth.ts and the refresh flow in client.ts.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.AuthController.Refresh(WebBanHang.Api.Models.RefreshRequest,System.Threading.CancellationToken)">
+            <summary>Shared by customers and back-office users.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.AuthController.Logout">
+            <summary>Tokens are stateless; the client discards them.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.CatalogController">
+            <summary>Storefront catalog — matches frontend/lib/api/products.ts and categories.ts.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.CatalogController.#ctor(WebBanHang.Api.Services.CatalogService)">
+            <summary>Storefront catalog — matches frontend/lib/api/products.ts and categories.ts.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.CatalogController.Reviews(System.String)">
+            <summary>Reviews are not part of the legacy schema; kept so the frontend call succeeds.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.ContentController">
+            <summary>Read-only CMS content for the storefront (news, banners, partners, services, site settings).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.ContentController.#ctor(WebBanHang.Api.Data.AppDbContext,WebBanHang.Api.Services.MediaService)">
+            <summary>Read-only CMS content for the storefront (news, banners, partners, services, site settings).</summary>
+        </member>
+        <member name="F:WebBanHang.Api.Controllers.ContentController.PublicConfigKeys">
+            <summary>Config keys that are safe to expose publicly (the table also holds SMTP credentials).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.OrdersController">
+            <summary>
+            "Đơn hàng của tôi" — quote requests of the signed-in customer. The legacy Orders table has no user FK,
+            so ownership is matched on the account e-mail.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.OrdersController.#ctor(WebBanHang.Api.Data.AppDbContext,WebBanHang.Api.Services.OrderService,WebBanHang.Api.Services.ICurrentUser)">
+            <summary>
+            "Đơn hàng của tôi" — quote requests of the signed-in customer. The legacy Orders table has no user FK,
+            so ownership is matched on the account e-mail.
+            </summary>
+        </member>
+        <member name="T:WebBanHang.Api.Controllers.RequestsController">
+            <summary>Public forms — matches frontend/lib/api/requests.ts. Rate-limited per IP (the legacy table is full of spam).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Controllers.RequestsController.#ctor(WebBanHang.Api.Services.OrderService)">
+            <summary>Public forms — matches frontend/lib/api/requests.ts. Rate-limited per IP (the legacy table is full of spam).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.AdminSeeder">
+            <summary>
+            <c>dotnet run -- create-admin &lt;username&gt; [password]</c>: creates (or resets) a back-office account in the Admin group.
+            The password is prompted for when omitted, so it does not end up in shell history.
+            </summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.AppDbContext">
+            <summary>
+            Database-first mapping onto the existing "vienvienco_VVNET" schema.
+            No migrations are generated: the schema is owned by the SQL script in /SQL.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.AppDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{WebBanHang.Api.Data.AppDbContext},WebBanHang.Api.Services.ICurrentUser)">
+            <summary>
+            Database-first mapping onto the existing "vienvienco_VVNET" schema.
+            No migrations are generated: the schema is owned by the SQL script in /SQL.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.AppDbContext.StampAudit">
+            <summary>Fills the audit/NOT NULL columns the legacy schema expects on every row.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.DbExtensions.InsertAsync``1(WebBanHang.Api.Data.AppDbContext,``0,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Inserts a row following the legacy convention: a new item gets IDxxx = PKxxx, while a translation
+            reuses the logical id of the item it translates. The id column is NOT NULL in most tables, so the row is
+            inserted with 0 and patched inside the same transaction.
+            </summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.AuditEntity">
+            <summary>
+            Common columns shared by every table in the legacy CMS schema.
+            Pk  = PKxxx  (IDENTITY, one row per language)
+            Id  = IDxxx  (logical id, shared by the vi/en rows of the same item; equals Pk of the first row)
+            </summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.AuditEntity.Levels">
+            <summary>Sort order (higher = shown first) in the legacy site.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.AuditEntity.IsDeleted">
+            <summary>0 = active, 1 = soft-deleted.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.CmsEntity">
+            <summary>Content tables that carry a LanguageID column (0 = vi, 1 = en).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.ISeoEntity">
+            <summary>Tables that own a public URL stored in the legacy "TitleURL" format: "/slug.html" or "/en/slug.html".</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Product">
+            <summary>dbo.Product</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Product.CategoryId">
+            <summary>Logical id (IDCategory) of ProductCategory.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Product.Code">
+            <summary>Product code / SKU.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Product.StandardIso">
+            <summary>Free-text list of test standards, e.g. "ISO 9237, ASTM D1776".</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Product.BigImages">
+            <summary>Main image file name (folder Photos/Products).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Product.ManufacturerId">
+            <summary>Logical id (IDManufacturer) of ProductManufacturer.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Product.Highlights">
+            <summary>Column "Brand": HTML block of commitments (warranty, shipping, standards) shown beside the product.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.ProductCategory">
+            <summary>dbo.ProductCategory</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.ProductManufacturer">
+            <summary>dbo.ProductManufacturer — used as "Brand" by the frontend.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.ProductImage">
+            <summary>dbo.ImagesProduct — extra gallery images. ProductId = logical product id.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.StandardIso">
+            <summary>dbo.StandardISO</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.ProductStandardIso">
+            <summary>dbo.ProductStandardISO — link table (no logical id column).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.News">
+            <summary>dbo.News</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.NewsCategory">
+            <summary>dbo.NewsCategory</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Service">
+            <summary>dbo.Services</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Banner">
+            <summary>dbo.BannerHome — homepage slider.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Partner">
+            <summary>dbo.Partner</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Project">
+            <summary>dbo.Project</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.ProjectCategory">
+            <summary>dbo.ProjectCategory</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Document">
+            <summary>dbo.DocumentDownload</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.DocumentCategory">
+            <summary>dbo.DocumentDownloadCategory</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.SiteConfig">
+            <summary>dbo.Config — key/value site settings.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Logon">
+            <summary>dbo.Logons — back-office (admin/staff) accounts.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Assign">
+            <summary>dbo.Assigns — Logons ↔ Groups (1 = Admin, 2 = Nhân viên).</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Group">
+            <summary>dbo.Groups</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Member">
+            <summary>dbo.Members — profile of a back-office account.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Account">
+            <summary>dbo.Account — storefront customer accounts.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Order">
+            <summary>dbo.Orders — used as quote requests (B2B). Logical id column is "IDCategory".</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Order.Status">
+            <summary>Column "is_status": see <see cref="T:WebBanHang.Api.Common.OrderStatuses"/>.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.OrderDetail">
+            <summary>dbo.ordersdetailed — CategoryId holds the logical id of the parent Order.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.OrderDetail.ProductId">
+            <summary>Logical product id (IDProduct).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.OrderDetail.Amount">
+            <summary>Unit price at the time of the request.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.Entities.Contact">
+            <summary>dbo.Contacts</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Data.Entities.Contact.IsProcess">
+            <summary>0 = new, 1 = processed.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Data.ImageSync">
+            <summary>
+            <c>dotnet run -- sync-images [--apply] [--download]</c>
+            <para>
+            The SQL backup is older than the live site: images were re-uploaded there with a new random suffix
+            ("may-giat-labowash-rf6088w_0c5.jpg" in the DB, "…_cb9.jpg" online), so the stored names 404.
+            For every product/category whose image is missing this finds the current file name on the old site:
+            the product page's og:image first, then the category listings (same name without the "_xxx" suffix,
+            or the only image whose name contains the product code).
+            </para>
+            Without <c>--apply</c> it only prints what would change; with it the old values are saved to a CSV first.
+            <c>--download</c> also copies the images into wwwroot/Photos so the storefront no longer depends on the
+            old site (MediaService serves local copies first).
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.CrawlListingAsync(System.String)">
+            <summary>
+            Trang danh mục của site cũ (ASP.NET WebForms) phân trang bằng postback: gửi lại form với
+            __EVENTTARGET = control phân trang và __EVENTARGUMENT = số trang.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.BannerBaseName(System.String)">
+            <summary>"may-kiem-tra-noi-that424_.jpg" → "may-kiem-tra-noi-that"</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.BaseName(System.String)">
+            <summary>"may-giat_cb9.jpg" → "may-giat"</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.OgImage">
+            <remarks>
+            Pattern:<br/>
+            <code>property=["']og:image["'][^&gt;]*content=["'](?&lt;url&gt;[^"']+)["']</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [Pp].<br/>
+            ○ Match a character in the set [Rr].<br/>
+            ○ Match a character in the set [Oo].<br/>
+            ○ Match a character in the set [Pp].<br/>
+            ○ Match a character in the set [Ee].<br/>
+            ○ Match a character in the set [Rr].<br/>
+            ○ Match a character in the set [Tt].<br/>
+            ○ Match a character in the set [Yy].<br/>
+            ○ Match '='.<br/>
+            ○ Match a character in the set ["'].<br/>
+            ○ Match a character in the set [Oo].<br/>
+            ○ Match a character in the set [Gg].<br/>
+            ○ Match ':'.<br/>
+            ○ Match a character in the set [Ii].<br/>
+            ○ Match a character in the set [Mm].<br/>
+            ○ Match a character in the set [Aa].<br/>
+            ○ Match a character in the set [Gg].<br/>
+            ○ Match a character in the set [Ee].<br/>
+            ○ Match a character in the set ["'].<br/>
+            ○ Match a character other than '&gt;' greedily any number of times.<br/>
+            ○ Match a character in the set [Cc].<br/>
+            ○ Match a character in the set [Oo].<br/>
+            ○ Match a character in the set [Nn].<br/>
+            ○ Match a character in the set [Tt].<br/>
+            ○ Match a character in the set [Ee].<br/>
+            ○ Match a character in the set [Nn].<br/>
+            ○ Match a character in the set [Tt].<br/>
+            ○ Match '='.<br/>
+            ○ Match a character in the set ["'].<br/>
+            ○ "url" capture group.<br/>
+                ○ Match a character in the set [^"'] atomically at least once.<br/>
+            ○ Match a character in the set ["'].<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.PhotoLink">
+            <remarks>
+            Pattern:<br/>
+            <code>/Photos/(?&lt;folder&gt;[A-Za-z]+)/(?&lt;file&gt;[^"'\\s?]+)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "/Photos/".<br/>
+            ○ "folder" capture group.<br/>
+                ○ Match a character in the set [A-Za-z] atomically at least once.<br/>
+            ○ Match '/'.<br/>
+            ○ "file" capture group.<br/>
+                ○ Match a character in the set [^"'?\s] atomically at least once.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.PagerLink">
+            <remarks>
+            Pattern:<br/>
+            <code>__doPostBack\\('(?&lt;target&gt;[^']+)','(?&lt;page&gt;\\d+)'\\)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "__doPostBack('".<br/>
+            ○ "target" capture group.<br/>
+                ○ Match a character other than '\'' atomically at least once.<br/>
+            ○ Match the string "','".<br/>
+            ○ "page" capture group.<br/>
+                ○ Match a Unicode digit atomically at least once.<br/>
+            ○ Match the string "')".<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:WebBanHang.Api.Data.ImageSync.HiddenInput">
+            <remarks>
+            Pattern:<br/>
+            <code>&lt;input type="hidden" name="(?&lt;name&gt;[^"]+)" id="[^"]*" value="(?&lt;value&gt;[^"]*)"</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "&lt;input type=\"hidden\" name=\"".<br/>
+            ○ "name" capture group.<br/>
+                ○ Match a character other than '"' atomically at least once.<br/>
+            ○ Match the string "\" id=\"".<br/>
+            ○ Match a character other than '"' atomically any number of times.<br/>
+            ○ Match the string "\" value=\"".<br/>
+            ○ "value" capture group.<br/>
+                ○ Match a character other than '"' atomically any number of times.<br/>
+            ○ Match '"'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="P:WebBanHang.Api.Models.AdminListQuery.Q">
+            <summary>Free-text search.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.AdminListQuery.Lang">
+            <summary>vi | en | all (default vi).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.AdminListQuery.Status">
+            <summary>active | deleted | all (default active).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.CmsInput.Levels">
+            <summary>Sort order — higher values are listed first.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ISeoInput.Slug">
+            <summary>URL slug without "/" or ".html". Generated from the title when empty.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ProductInput.BigImages">
+            <summary>Main image (file name or /uploads/... path).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ProductInput.Highlights">
+            <summary>HTML box of commitments (legacy column "Brand").</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.BannerInput.CategoryId">
+            <summary>BannerHomeCategory id (slider group).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ProductStandardsInput.StandardIds">
+            <summary>Logical ids (IDStandardISO) of StandardISO.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.AdminUserCreate.Role">
+            <summary>admin | staff</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Models.UserDto">
+            <summary>Mirrors the User type in frontend/types/index.ts.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Models.UserDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTime},System.String)">
+            <summary>Mirrors the User type in frontend/types/index.ts.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.OrderStatusUpdate.Status">
+            <summary>pending | confirmed | processing | shipping | delivered | cancelled</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ProductDto.Description">
+            <summary>HTML. Empty in list responses to keep payloads small.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ProductQuery.BrandSlug">
+            <summary>Comma-separated brand slugs.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Models.ProductQuery.SortBy">
+            <summary>price_asc | price_desc | newest | best_seller | rating</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.AuthOptions.UpgradeLegacyPasswords">
+            <summary>
+            Re-hash legacy MD5 passwords with PBKDF2 after a successful login. Requires Database/upgrade.sql.
+            Turn off while the old ASP.NET site still authenticates against the same database.
+            </summary>
+        </member>
+        <member name="F:WebBanHang.Api.Services.AuthService.AdminGroupId">
+            <summary>Groups.IDGroups of the "Admin" group; everyone else in Logons is staff.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.AuthService.RefreshAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Validates the refresh token and re-checks that the account still exists and is active.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Services.CatalogService">
+            <summary>Read side of the storefront: turns legacy Product/ProductCategory/ProductManufacturer rows into frontend DTOs.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.CatalogService.#ctor(WebBanHang.Api.Data.AppDbContext,WebBanHang.Api.Services.MediaService)">
+            <summary>Read side of the storefront: turns legacy Product/ProductCategory/ProductManufacturer rows into frontend DTOs.</summary>
+        </member>
+        <member name="F:WebBanHang.Api.Services.CatalogService.AssumedStock">
+            <summary>Inventory is not tracked in the legacy schema; products are sold on quotation (B2B).</summary>
+        </member>
+        <member name="F:WebBanHang.Api.Services.CatalogService.BestSellerSold">
+            <summary>The storefront shows the "Bán chạy" badge from sold ≥ 100; IsSellers flags best sellers.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.CatalogService.LoadBrandsAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Logical manufacturer id → brand, one entry per id (falls back to the vi row).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.CatalogService.GetHighlightedAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>Flagged products first; falls back to the newest ones so homepage sections are never empty.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Services.ContentSanitizer">
+            <summary>
+            Rich-text fields (Description, ShortText…) are rendered with dangerouslySetInnerHTML on the storefront,
+            so HTML coming from the admin is sanitized before it is stored.
+            </summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.ICurrentUser.AdminId">
+            <summary>Logons.Pk when the caller is a back-office user (used for CreateBy/ModifyBy).</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.ICurrentUser.CustomerId">
+            <summary>Account.Pk when the caller is a storefront customer.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.MediaOptions.LegacyBaseUrl">
+            <summary>Where the legacy site serves its photos, e.g. https://vienvienco.com/Photos</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.MediaOptions.PublicBaseUrl">
+            <summary>Public base URL of this API, used for files uploaded through /api/admin/uploads.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.MediaOptions.Folders">
+            <summary>Media kind → legacy sub-folder (e.g. "product" → "Products").</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Services.MediaKind">
+            <summary>Kinds of media, used both for legacy folder lookup and the upload sub-folder.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Services.MediaService">
+            <summary>
+            The legacy DB stores bare file names ("may-giat_e7b.jpg"). This turns them into absolute URLs and handles
+            files uploaded through the new admin ("/uploads/product/x.jpg") and full URLs as-is.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.MediaService.#ctor(Microsoft.Extensions.Options.IOptions{WebBanHang.Api.Services.MediaOptions},Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            The legacy DB stores bare file names ("may-giat_e7b.jpg"). This turns them into absolute URLs and handles
+            files uploaded through the new admin ("/uploads/product/x.jpg") and full URLs as-is.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.MediaService.SaveAsync(System.String,Microsoft.AspNetCore.Http.IFormFile,System.Threading.CancellationToken)">
+            <summary>Saves an uploaded file under wwwroot/uploads/{kind}/ and returns the value to store in the DB.</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.MediaService.AbsolutizeHtml(System.String)">
+            <summary>
+            Legacy rich text links its images as src="/Uploads/…", relative to the old site. Rewrites root-relative
+            src/href attributes to absolute URLs so they still load when rendered by the new storefront.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.MediaService.RootRelativeAttribute">
+            <remarks>
+            Pattern:<br/>
+            <code>(?&lt;attr&gt;\\s(?:src|href)\\s*=\\s*["'])/(?!/)(?&lt;path&gt;[^"']*)</code><br/>
+            Options:<br/>
+            <code>RegexOptions.IgnoreCase</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ "attr" capture group.<br/>
+                ○ Match a whitespace character.<br/>
+                ○ Match with 2 alternative expressions.<br/>
+                    ○ Match a sequence of expressions.<br/>
+                        ○ Match an empty string.<br/>
+                        ○ Match a character in the set [Rr].<br/>
+                        ○ Match a character in the set [Cc].<br/>
+                    ○ Match a sequence of expressions.<br/>
+                        ○ Match an empty string.<br/>
+                        ○ Match a character in the set [Rr].<br/>
+                        ○ Match a character in the set [Ee].<br/>
+                        ○ Match a character in the set [Ff].<br/>
+                ○ Match a whitespace character atomically any number of times.<br/>
+                ○ Match '='.<br/>
+                ○ Match a whitespace character atomically any number of times.<br/>
+                ○ Match a character in the set ["'].<br/>
+            ○ Match '/'.<br/>
+            ○ Zero-width negative lookahead.<br/>
+                ○ Match '/'.<br/>
+            ○ "path" capture group.<br/>
+                ○ Match a character in the set [^"'] atomically any number of times.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:WebBanHang.Api.Services.OrderService">
+            <summary>Quote requests (Orders + ordersdetailed) and contact messages (Contacts).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.OrderService.#ctor(WebBanHang.Api.Data.AppDbContext,WebBanHang.Api.Services.MediaService)">
+            <summary>Quote requests (Orders + ordersdetailed) and contact messages (Contacts).</summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.OrderService.MapAsync(System.Collections.Generic.IReadOnlyList{WebBanHang.Api.Data.Entities.Order},System.Int32,System.Threading.CancellationToken)">
+            <summary>Maps orders (with their lines) to the frontend Order shape.</summary>
+        </member>
+        <member name="P:WebBanHang.Api.Services.JwtOptions.Key">
+            <summary>HMAC-SHA256 signing key, at least 32 characters. Set via configuration/secret store, never commit a real one.</summary>
+        </member>
+        <member name="T:WebBanHang.Api.Services.TokenService">
+            <summary>
+            Stateless JWT access + refresh tokens. The refresh token uses a separate audience so it can never be
+            used as an access token; on refresh the account is re-checked against the database.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.TokenService.#ctor(Microsoft.Extensions.Options.IOptions{WebBanHang.Api.Services.JwtOptions})">
+            <summary>
+            Stateless JWT access + refresh tokens. The refresh token uses a separate audience so it can never be
+            used as an access token; on refresh the account is re-checked against the database.
+            </summary>
+        </member>
+        <member name="M:WebBanHang.Api.Services.TokenService.ReadRefreshToken(System.String)">
+            <summary>Returns the principal of a valid refresh token, or null.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Tags_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the Tags method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Tags_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Tags_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Tags_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Tags_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Tags_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Tags_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Tags_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Tags_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Spaces_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the Spaces method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Spaces_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Spaces_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Spaces_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Spaces_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Spaces_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Spaces_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Spaces_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Spaces_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NonAlphanumeric_2">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the NonAlphanumeric method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.NonAlphanumeric_2.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.TrailingNumber_3">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the TrailingNumber method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.TrailingNumber_3.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TrailingNumber_3.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.TrailingNumber_3.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TrailingNumber_3.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.TrailingNumber_3.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TrailingNumber_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TrailingNumber_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.TrailingNumber_3.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.OgImage_4">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the OgImage method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.OgImage_4.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.OgImage_4.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.OgImage_4.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.OgImage_4.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.OgImage_4.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.OgImage_4.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.OgImage_4.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.OgImage_4.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PhotoLink_5">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the PhotoLink method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.PhotoLink_5.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PhotoLink_5.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PhotoLink_5.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PhotoLink_5.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PhotoLink_5.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PhotoLink_5.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PhotoLink_5.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PhotoLink_5.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PagerLink_6">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the PagerLink method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.PagerLink_6.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PagerLink_6.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PagerLink_6.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PagerLink_6.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.PagerLink_6.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PagerLink_6.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PagerLink_6.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.PagerLink_6.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.HiddenInput_7">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the HiddenInput method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.HiddenInput_7.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HiddenInput_7.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.HiddenInput_7.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HiddenInput_7.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.HiddenInput_7.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HiddenInput_7.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HiddenInput_7.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.HiddenInput_7.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the RootRelativeAttribute method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RootRelativeAttribute_8.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.IndexOfNonAsciiOrAny_98419BE3621AA428E830AB4D6EA3C2C1C6A30876EB80F52A9F0FC428C4ECA47E(System.ReadOnlySpan{System.Char})">
+            <summary>Finds the next index of any character that matches a character in the set [-\d].</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_asciiLetters">
+            <summary>Supports searching for characters in or not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_FF0300000000FEFFFF07">
+            <summary>Supports searching for characters in or not in "0123456789abcdefghijklmnopqrstuvwxyz".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_FFFFFFFFFFDF00FCFFFFFFFFFFFFFFFF">
+            <summary>Supports searching for characters in or not in "\0\u0001\u0002\u0003\u0004\u0005\u0006\a\b\t\n\v\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f !\"#$%&amp;'()*+,./:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u007f".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_2C292BE3723EFF7FF9B89B17CD6EE3BF757D6608C1D86B0515769D3C259A4C04">
+            <summary>Supports searching for the string "__doPostBack('".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_5B9BC40D5F5D0A83BD24F6560DD6FEC0A74F59C581DDCAD211A206733BB02EC2">
+            <summary>Supports searching for the string "&lt;input type=\"hidden\" name=\"".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_69A9DDFE42D707612EC54C72F9869DC192DA656F71A3C2A27F6F6E0C6EF4A134">
+            <summary>Supports searching for the string "/Photos/".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_property_OrdinalIgnoreCase">
+            <summary>Supports searching for the string "property".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_whitespace">
+            <summary>Supports searching for characters in or not in "\t\n\v\f\r \u0085             \u2028\u2029  　".</summary>
+        </member>
+    </members>
+</doc>
